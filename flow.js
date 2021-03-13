@@ -6,7 +6,8 @@ class Compiler {
     constructor(config) {
         this.config = config
         this.hooks = {
-            run : new SyncHook(['run'])
+            run : new SyncHook(['run']),
+            initialize : new SyncHook(['initialize']),
         }
     }
 
@@ -16,12 +17,21 @@ class Compiler {
             chunks = [] , // {id:'name',modules:[...modules]}
             assets ={} , // {filename:source}
             files =[]; // assets[key]
+        let entrySource = "";
         //5确定入口：根据配置中的entry找出所有的入口文件
         let entry = path.join((this.config.context || process.cwd()) , this.config.entry)
         entrys.push({name:'main',entry})
         // 编译模块：从入口文件出发，调用所有配置的Loader对模块进行编译，
         let entryContent = fs.readFileSync(entry,'utf8')
-        let entrySource = babelLoader(entryContent)
+        for(let rule of this.config.module.rules){
+            if(rule.test.test(entry)){
+                rule.use.forEach(loader=>{
+                    entrySource = loader.loader(entrySource || entryContent)
+                })
+            }
+        }
+
+
         let entryModule = {id:"src/index.js",source:entrySource}
         modules.push(entryModule)
         //再递归本步骤直到所有入口依赖的文件都经过了本步骤的处理；
@@ -31,30 +41,13 @@ class Compiler {
         let cssModule = {id:'src/index.css',source: cssSource}
         modules.push(cssModule)
 
+
         // 6输出资源：根据入口和模块之间的依赖关系，组装成一个个包含多个模块的 Chunk，
         let chunk = {id:'main',modules:[entryModule,cssModule]}
         chunks.push(chunk)
         //7 再把每个Chunk转换成一个单独的文件加入到输出列表，这步是可以修改输出内容的最后机会
         for(let chunk of chunks ){
-            assets[chunk['id'] + '.js'] = `(function (module){
-                function webpack_require(moduleId){
-                    if (installedModules[moduleId]) {
-                        return  installedModules[moduleId].exports
-                    }
-                    const node_module = installedModules[moduleId] = {
-                        i : moduleId,
-                        l : false,
-                        exports : {}
-                    }
-                    module[moduleId].call(node_module.exports,node_module,node_module.exports,webpack_require)
-
-                    node_module.l = true
-                    return  node_module.exports
-                }
-                return webpack_require('./src/index.js')
-            })(    './src/index.js' : function (module, __webpack_exports__, __webpack_require__){
-                console.log('hello')
-            })`
+            assets[chunk['id'] + '.js'] = chunk['modules'][0]['source']
         }
         this.hooks.run.call(assets)
         // 8. 输出完成：在确定好输出内容后，根据配置确定输出的路径和文件名，把文件内容写入到文件系统
