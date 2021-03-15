@@ -18,10 +18,10 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: "src/index.html"
     }),
-    // new webpack.SourceMapDevToolPlugin({
-    //   append: '\n//# sourceMappingURL=http://127.0.0.1:8080/sourcemap/[url]',
-    //   filename: '[name].map',
-    // }),
+    new webpack.SourceMapDevToolPlugin({
+      append: '\n//# sourceMappingURL=http://127.0.0.1:8080/sourcemap/[url]',
+      filename: '[name].map',
+    }),
     new FileManagerPlugin({
       events:{
         onEnd:{

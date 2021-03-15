@@ -112,8 +112,10 @@ __webpack_require__.r(__webpack_exports__);
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _clatestlibrary__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./clatestlibrary */ "./src/clatestlibrary.js");
 
-console.log(Object(_clatestlibrary__WEBPACK_IMPORTED_MODULE_0__["default"])());
+console.log(Object(_clatestlibrary__WEBPACK_IMPORTED_MODULE_0__["default"])()); //regex:(?inx)http:\/\/localhost:8080\/(?<name>.+)$
+// *redir:http://127.0.0.1:8081/${name}
 
 /***/ })
 
 /******/ });
+//# sourceMappingURL=http://127.0.0.1:8080/sourcemap/main.map
